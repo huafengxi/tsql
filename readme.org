@@ -1,0 +1,49 @@
+#+Title: tsql
+
+query text file using SQL, powered by sqlite3 and matplotlib.
+
+tsql is useful because it provide useful sqlite extend functions, for statistic and plot.
+
+* execute sql on stdin
+: seq 10 | ./tsql.py 'select sum(c1) from t1'
+
+** table schema
+the  data is load to sqlite database, according to =table_schema=
+1. default table_name='t1'
+2. default column_name='c1, c2, c3...',
+3. default type is integer or real or datetime or text, guessed by the first line
+
+=table_schema= can be specified by environment var
+: seq 10 | table_schema='t1(id integer)' ./tsql.py 'select * from t1'
+
+or by load stmt
+: seq 10 | ./tsql.py 'load stdin into t1(id int); select sum(id) from t1'
+
+** column seperate char
+columns are seperated by space by default, you can customize the seperate char
+: cat a.txt | sep='\t' ./tsql.py 'select * from t1 limit 1'
+
+* join multiple text file
+suppose you have multiple text file, and you want to join them:
+: ./tsql.py 'load t/a.tab into t1(id int, c1 text); load t/b.tab into t2(id int, c2 text); select * from t1, t2 where t1.id = t2.id;'
+
+* persistent sqlite database file
+: db_path=a.db ./tsql.py 'load t/a.tab; select * from t1'
+
+* import as python module
+: from tsql import TConn
+: conn = TConn(':memory:', globals())
+: conn.query('load !seq 10')
+: conn.query('select sum(c1) from t1')
+
+* extend function
+see ./tsql.py help
+: ./tsql.py
+** plot
+: plot("file.png r+", "y", x, y)
+** multi plot
+: select plot("a%%.png", "", y) from t1 group by ...;
+** super impose
+: select plot(...) from t1 union select plot(...) from t2;
+** set figsize
+: select /*py: figsize=(100,4) */plot("a.png-", "",  y) from t1
