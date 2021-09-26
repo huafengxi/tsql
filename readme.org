@@ -38,15 +38,6 @@ suppose you have multiple text file, and you want to join them:
 
 * extend function
 see ./tsql.py help
-: ./tsql.py
-** plot
-: plot("file.png r+", "y", x, y)
-** multi plot
-: select plot("a%%.png", "", y) from t1 group by ...;
-** super impose
-: select plot(...) from t1 union select plot(...) from t2;
-** set figsize
-: select /*py: figsize=(100,4) */plot("a.png-", "",  y) from t1
 
 * extract field from log file
 : echo 'k: xxx: v: 456' | ./find.py find 'k: $W.*v: $N'
