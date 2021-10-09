@@ -1,4 +1,5 @@
 #!/usr/bin/env python2
+# -*- coding: utf-8-unix -*-
 '''
 tsql means execute sql over text file, which load data from stdin to sqlite database, then execute sql query and print the result.
 tsql is useful because it provide some useful sqlite extend functions, mainly for statistic and plot.
@@ -20,6 +21,8 @@ Usage:
 '''
 
 import sys, os
+reload(sys)
+sys.setdefaultencoding('UTF8')
 import re
 import time
 import datetime
