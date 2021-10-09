@@ -11,12 +11,13 @@ superimpose plot:
 set figsize
   select /*py: figsize=(100,4) */plot("a.png-", "",  y) from t1
 '''
+import sys
 try:
     import matplotlib
     import matplotlib.dates as mdates
 except:
     matplotlib = None
-    print 'not support matplotlib'
+    sys.stderr.write('not support matplotlib\n')
 
 if matplotlib:
     matplotlib.use('Agg')
