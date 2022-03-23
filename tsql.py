@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8-unix -*-
 '''
 tsql means execute sql over text file, which load data from stdin to sqlite database, then execute sql query and print the result.
@@ -21,12 +21,9 @@ Usage:
 '''
 
 import sys, os
-reload(sys)
-sys.setdefaultencoding('UTF8')
 import re
 import time
 import datetime
-import urllib2
 import sqlite3
 import traceback
 
@@ -42,15 +39,13 @@ class QueryErr(Exception):
 
 def load_file(path, globals, locals):
     def to_row(x):
-        if type(x) == str or type(x) == unicode or not hasattr(x, '__getitem__'):
+        if type(x) == str or type(x) == str or not hasattr(x, '__getitem__'):
             return (x,)
         return x
     #if path.startswith('@'):
     #    return [to_row(i) for i in eval(path[1:], globals, locals)]
     if path == 'stdin':
         fd = sys.stdin
-    elif path.startswith('http'):
-        fd = urllib2.urlopen(path, timeout=3)
     elif path.startswith('!'):
         fd = os.popen(path[1:])
     else:
@@ -65,7 +60,7 @@ def parse_cell(t, cell):
             return None
         try:
             return float(x)
-        except TypeError,ValueError:
+        except TypeError as ValueError:
             return None
     def safe_int(x):
         if type(x) == str:
@@ -75,7 +70,7 @@ def parse_cell(t, cell):
         try:
             if x.startswith('0x'): return int(x, 16)
             return int(x)
-        except TypeError,ValueError:
+        except TypeError as ValueError:
             return None
     def to_datetime(x):
         try:
@@ -88,7 +83,7 @@ def parse_cell(t, cell):
     def to_unicode(text):
         return text.decode('utf8')
     value_parsers = dict(real=safe_float, text=to_unicode, integer=safe_int, bigint=safe_int, int=safe_int, datetime=to_datetime, boolean=bool)
-    if not value_parsers.has_key(t):
+    if t not in value_parsers:
         return None
     else:
         return value_parsers[t](cell)
@@ -100,11 +95,11 @@ def parse_rows(types, rows):
         load_row_count += 1
         if 0 == (load_row_count % 100000):
             sys.stderr.write('load row: {}\n'.format(load_row_count))
-        yield map(lambda type, cell: parse_cell(type, cell), types, row)
+        yield list(map(lambda type, cell: parse_cell(type, cell), types, row))
 
 def render_result(result, header, term):
     def to_str(o):
-        if type(o) == unicode:
+        if type(o) == str:
             return o.encode('utf8')
         else:
             return str(o)
@@ -114,15 +109,15 @@ def render_result(result, header, term):
         sys.stderr.write(' empty set.')
     else:
         if term == 'html':
-            print '<table>'
-            print render_row(header)
+            print('<table>')
+            print(render_row(header))
             for cols in result:
-                print render_row(cols)
-            print '</table>'
+                print(render_row(cols))
+            print('</table>')
         else:
             sys.stderr.write('%s\n'%('\t'.join(header)))
             for cols in result:
-                print '\t'.join(map(to_str, cols))
+                print('\t'.join(map(to_str, cols)))
 
 from tschema import TSchema
 class TConn:
@@ -148,7 +143,7 @@ class TConn:
         return m and m.group(1) or ''
     def query(self, sql, locals=None):
         pystmt = self.parse_pystmt(sql)
-        exec pystmt in self.env, locals
+        exec(pystmt, self.env, locals)
         src, tname = self.parse_load_sql(sql)
         if src:
             self.load(tname, load_file(src, self.env, locals))
@@ -163,7 +158,7 @@ class TConn:
         if rows:
             render_result(rows, header, os.getenv('term', 'text'))
     def load(self, tname, data): # data is iterator
-        first_row = data.next()
+        first_row = next(data)
         tschema = self.prepare_table(tname, first_row)
         self.executemany(tschema.replace_sql(), parse_rows(tschema.col_types, [first_row]))
         self.executemany(tschema.replace_sql(), parse_rows(tschema.col_types, data))
@@ -196,9 +191,9 @@ sql_hook = SqlHook()
 sql_hook.load_exts('pypipe stat_func filt plot str html cache')
 
 def help():
-    print sys.argv
-    print __doc__
-    print sql_hook.get_doc()
+    print(sys.argv)
+    print(__doc__)
+    print(sql_hook.get_doc())
 
 if __name__ == '__main__':
     (len(sys.argv) == 2 or len(sys.argv) == 1 and not sys.stdin.isatty()) or help() or sys.exit(1)
@@ -209,7 +204,7 @@ if __name__ == '__main__':
     msql = re.split(';|\n', sql)
     db_path = os.getenv('db_path') or ':memory:'
     if os.path.exists('tsql_init.py'):
-        execfile('tsql_init.py', globals(), locals())
+        exec(compile(open('tsql_init.py').read(), 'tsql_init.py', 'exec'), globals(), locals())
     conn = TConn(db_path, globals())
     first_cmd = msql[0].strip()
     if db_path == ':memory:' and not (first_cmd.startswith('load ') or first_cmd.startswith('create')):
