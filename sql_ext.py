@@ -20,11 +20,11 @@ class SqlHook:
 
     def reg_aggregate_func(self, conn, func, args_num):
         cls = make_sqlite_agg_class(func, args_num)
-        conn.create_aggregate(func.func_name, args_num, cls)
+        conn.create_aggregate(func.__name__, args_num, cls)
     def reg_aggregate_class(self, conn, cls, args_num):
         conn.create_aggregate(cls.__name__, args_num, cls)
     def reg_func(self, conn, func, args_num):
-        conn.create_function(func.func_name, args_num, func)
+        conn.create_function(func.__name__, args_num, func)
     def reg_key_func(self, conn, cls, args_num):
         def func(key, *args):
             return get_global_sql_func(key, cls)(*args)

@@ -81,7 +81,7 @@ def parse_cell(t, cell):
         except ValueError:
             pass
     def to_unicode(text):
-        return text.decode('utf8')
+        return text.decode('utf8') if text is bytes else text
     value_parsers = dict(real=safe_float, text=to_unicode, integer=safe_int, bigint=safe_int, int=safe_int, datetime=to_datetime, boolean=bool)
     if t not in value_parsers:
         return None
@@ -188,7 +188,7 @@ _tsql_path_ = os.path.dirname(os.path.realpath(sys.argv[0]))
 sys.path.append('%s/ext'%(_tsql_path_))
 from sql_ext import SqlHook
 sql_hook = SqlHook()
-sql_hook.load_exts('pypipe stat_func filt plot str html cache')
+sql_hook.load_exts('pypipe stat_func filt plot str')
 
 def help():
     print(sys.argv)
