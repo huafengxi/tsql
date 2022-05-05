@@ -49,7 +49,7 @@ def load_file(path, globals, locals):
     elif path.startswith('!'):
         fd = os.popen(path[1:])
     else:
-        fd = file(path)
+        fd = open(path)
     for line in fd:
         if not line.strip(): continue
         yield re.split(col_sep, line.strip())
