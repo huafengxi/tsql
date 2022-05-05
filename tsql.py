@@ -99,7 +99,7 @@ def parse_rows(types, rows):
 
 def render_result(result, header, term):
     def to_str(o):
-        if type(o) == str:
+        if type(o) == bytes:
             return o.encode('utf8')
         else:
             return str(o)
