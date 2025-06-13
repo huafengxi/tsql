@@ -27,7 +27,7 @@ import datetime
 import sqlite3
 import traceback
 
-col_sep = os.getenv('sep', '\s+') # use tab as column seperator
+col_sep = os.getenv('sep', r'\s+') # use tab as column seperator
 http_img_root = os.getenv('http_root', '')
 class QueryErr(Exception):
     def __init__(self, msg, obj=None):
@@ -164,7 +164,7 @@ class TConn:
         self.executemany(tschema.replace_sql(), parse_rows(tschema.col_types, data))
         self.commit()
     def prepare_table(self, tname, first_row):
-        if re.match('\w+$', tname):
+        if re.match(r'\w+$', tname):
             return TSchema(self.get_tschema(tname))
         else:
             x = TSchema(tname or os.getenv('table_schema') or TSchema.guess_tschema(first_row))
